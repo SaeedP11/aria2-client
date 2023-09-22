@@ -1,70 +1,28 @@
 /* Import */
-import * as os from 'os';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as Aria2 from 'aria2';
 // Interface
-import { IAria2ClientOptions } from '../interfaces/aria2-client-config.interface';
 import {
+  IAria2Config,
   IAria2Download,
+  IAria2File,
   IAria2GlobalStat,
-} from 'src/interfaces/aria2.interface';
-// Enum
-import { Aria2ClientFileType } from '../enums/aria2-client-file-type.enum';
-
-const defaultOptions = {
-  libs: {
-    os,
-    fs,
-    path,
-  },
-  config: {
-    host: 'localhost',
-    port: 6800,
-    secure: false,
-    secret: '',
-    path: '/jsonrpc',
-  },
-};
+  IAria2Peer,
+  IAria2Server,
+  IAria2Uri,
+} from '../interfaces/aria2.interface';
 
 export default class Aria2Client {
-  // Libs
-  private readonly libs: IAria2ClientOptions['libs'];
-  //
-  readonly defaultDownloadsDir: string;
-  readonly defaultCategoryDir: Record<Aria2ClientFileType, string> = {
-    [Aria2ClientFileType.GENERAL]: '',
-    [Aria2ClientFileType.COMPRESSED]: 'compressed',
-    [Aria2ClientFileType.PROGRAM]: 'program',
-    [Aria2ClientFileType.VIDEO]: 'video',
-    [Aria2ClientFileType.AUDIO]: 'audio',
-    [Aria2ClientFileType.PICTURE]: 'picture',
-  };
-  readonly fileTypes: Record<Aria2ClientFileType, string[]> = {
-    [Aria2ClientFileType.GENERAL]: [],
-    [Aria2ClientFileType.COMPRESSED]: [],
-    [Aria2ClientFileType.PROGRAM]: [],
-    [Aria2ClientFileType.VIDEO]: [],
-    [Aria2ClientFileType.AUDIO]: [],
-    [Aria2ClientFileType.PICTURE]: [],
-  };
-  //
   private readonly aria2: typeof Aria2;
 
-  constructor({
-    defaultDir,
-    libs = defaultOptions.libs,
-    config = defaultOptions.config,
-  }: IAria2ClientOptions = defaultOptions) {
-    // Set Libs
-    this.libs = libs ?? defaultOptions.libs;
-    //
-    this.defaultDownloadsDir =
-      defaultDir ?? `${this.libs.os.homedir()}/Downloads`;
-    //
-    if (!this.libs.fs.existsSync(this.defaultDownloadsDir))
-      throw new Error('defaultDir is not exist');
-
+  constructor(
+    config: IAria2Config = {
+      host: 'localhost',
+      port: 6800,
+      secure: false,
+      secret: '',
+      path: '/jsonrpc',
+    },
+  ) {
     this.aria2 = new Aria2(config);
   }
 
@@ -76,19 +34,11 @@ export default class Aria2Client {
     return await this.aria2.close();
   }
   // Aria2 Methods
-  async download(uris: string[]): Promise<Record<string, string>> {
-    const gids = {};
-    for (let i = 0; i < uris.length; i++) {
-      const uri = uris[i];
-      const { name, type } = this.getFileInfo(uri);
-      const dir = this.libs.path.join(
-        this.defaultDownloadsDir,
-        this.defaultCategoryDir[type],
-      );
-      gids[uri] = await this.aria2.call('addUri', [uri], { dir });
-    }
-
-    return gids;
+  async addUri(
+    uris: string[],
+    { dir }: { dir: string },
+  ): Promise<Record<string, string>> {
+    return await this.aria2.call('addUri', uris, { dir });
   }
 
   async addTorrent(torrent: string): Promise<string> {
@@ -131,36 +81,38 @@ export default class Aria2Client {
     return await this.aria2.call('unpauseAll');
   }
 
-  async getStatus(
+  async tellStatus(
     gid: string,
     keys: string[] = undefined,
   ): Promise<IAria2Download> {
     return await this.aria2.call('tellStatus', gid, keys);
   }
 
-  async getUris(gid: string): Promise<IAria2Download> {
+  async getUris(gid: string): Promise<IAria2Uri[]> {
     return await this.aria2.call('tellStatus', gid);
   }
 
-  async getFiles(gid: string): Promise<IAria2Download> {
+  async getFiles(gid: string): Promise<IAria2File[]> {
     return await this.aria2.call('getFiles', gid);
   }
 
-  async getActiveDownloads(): Promise<IAria2Download[]> {
+  async getPeers(gid: string): Promise<IAria2Peer[]> {
+    return await this.aria2.call('getPeers', gid);
+  }
+
+  async getServers(gid: string): Promise<IAria2Server[]> {
+    return await this.aria2.call('getPeers', gid);
+  }
+
+  async tellActive(): Promise<IAria2Download[]> {
     return await this.aria2.call('tellActive');
   }
 
-  async getWaitingDownloads(
-    offset: number,
-    num: number,
-  ): Promise<IAria2Download[]> {
+  async tellWaiting(offset: number, num: number): Promise<IAria2Download[]> {
     return await this.aria2.call('tellWaiting', offset, num);
   }
 
-  async getStoppedDownloads(
-    offset: number,
-    num: number,
-  ): Promise<IAria2Download[]> {
+  async tellStopped(offset: number, num: number): Promise<IAria2Download[]> {
     return await this.aria2.call('tellStopped', offset, num);
   }
 
@@ -234,27 +186,4 @@ export default class Aria2Client {
     return this.aria2.call('saveSession');
   }
   // Aria2 Notifications
-
-  // Helper Methods
-  getFileInfo(fileUrl: string): {
-    name: string;
-    type: Aria2ClientFileType;
-  } {
-    // TODO get file name
-    const fileName: string = fileUrl;
-    // TODO get file name
-    let fileFormat: string;
-
-    let fileType = Aria2ClientFileType.GENERAL;
-    for (const key in this.fileTypes) {
-      if (this.fileTypes[key].includes(fileFormat)) {
-        fileType = key as Aria2ClientFileType;
-      }
-    }
-
-    return {
-      name: fileName,
-      type: fileType,
-    };
-  }
 }

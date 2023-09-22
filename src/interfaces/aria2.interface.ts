@@ -1,6 +1,14 @@
 /* Import */
 // Enum
-import { Aria2DownloadStatus, Aria2ExitStatus } from 'src/enums/aria2.enum';
+import { Aria2DownloadStatus, Aria2ExitStatus } from '../enums/aria2.enum';
+
+export interface IAria2Config {
+  host: string;
+  port: number;
+  secure: boolean;
+  secret: string;
+  path: string;
+}
 
 export interface IAria2Download {
   gid: string;

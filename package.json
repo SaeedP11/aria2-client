@@ -8,6 +8,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "build": "npx tsc --build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "aria2-rpc": "aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all",
