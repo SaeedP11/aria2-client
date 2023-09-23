@@ -186,4 +186,35 @@ export default class Aria2Client {
     return this.aria2.call('saveSession');
   }
   // Aria2 Notifications
+  async onOpen(callback: CallableFunction) {
+    this.aria2.on('open', callback);
+  }
+
+  async onClose(callback: CallableFunction) {
+    this.aria2.on('close', callback);
+  }
+
+  async onDownloadStart(callback: CallableFunction) {
+    this.aria2.on('onDownloadStart', callback);
+  }
+
+  async onDownloadPause(callback: CallableFunction) {
+    this.aria2.on('onDownloadPause', callback);
+  }
+
+  async onDownloadStop(callback: CallableFunction) {
+    this.aria2.on('onDownloadStop', callback);
+  }
+
+  async onDownloadComplete(callback: CallableFunction) {
+    this.aria2.on('onDownloadComplete', callback);
+  }
+
+  async onDownloadError(callback: CallableFunction) {
+    this.aria2.on('onDownloadError', callback);
+  }
+
+  async onBtDownloadComplete(callback: CallableFunction) {
+    this.aria2.on('onBtDownloadComplete', callback);
+  }
 }
