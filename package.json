@@ -1,6 +1,6 @@
 {
   "name": "aria2-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A download client based on aria2 (a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line. It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink)",
   "keywords": [
     "download client",
