@@ -1,1 +1,1 @@
-## Aria2 Client (for Javascript)
+## Aria2 Client (for Typescript)
